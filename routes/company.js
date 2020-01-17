@@ -103,4 +103,26 @@ router.put("/:companyId", async (req, res) => {
 	}
 });
 
+// public
+// (soft) delete specific company
+router.delete("/:companyId", async (req, res) => {
+	try {
+		let { companyId } = req.params;
+
+		// check if company existed
+		let company = await Company.findOne({ _id: companyId });
+
+		if (!company)
+			return res
+				.status(404)
+				.json({ errors: [{ message: "Company Not found" }] });
+
+		// (soft) delete company
+		company = await Company.findByIdAndUpdate(company._id, { isActive: false });
+		return res.json(company);
+	} catch (err) {
+		return res.status(500).json({ errors: [{ message: err.message }] });
+	}
+});
+
 module.exports = router;
