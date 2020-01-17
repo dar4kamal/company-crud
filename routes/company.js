@@ -118,7 +118,13 @@ router.delete("/:companyId", async (req, res) => {
 				.json({ errors: [{ message: "Company Not found" }] });
 
 		// (soft) delete company
-		company = await Company.findByIdAndUpdate(company._id, { isActive: false });
+		company = await Company.findByIdAndUpdate(
+			company._id,
+			{ isActive: false },
+			{
+				new: true
+			}
+		);
 		return res.json(company);
 	} catch (err) {
 		return res.status(500).json({ errors: [{ message: err.message }] });
