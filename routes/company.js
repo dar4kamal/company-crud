@@ -76,4 +76,31 @@ router.get("/:companyId", async (req, res) => {
 	}
 });
 
+// public
+// update specific company with id
+router.put("/:companyId", async (req, res) => {
+	// validate req body
+	const { error } = validateUpdatedCompany(req.body);
+	if (error) return res.status(400).json({ errors: error.details });
+
+	try {
+		let { companyId } = req.params;
+		// check if company existed
+		let company = await Company.findOne({ _id: companyId });
+
+		if (!company)
+			return res
+				.status(404)
+				.json({ errors: [{ message: "Company Not found" }] });
+
+		// update company
+		company = await Company.findByIdAndUpdate(company._id, req.body, {
+			new: true
+		});
+		return res.json(company);
+	} catch (err) {
+		return res.status(500).json({ errors: [{ message: err.message }] });
+	}
+});
+
 module.exports = router;
