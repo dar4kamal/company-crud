@@ -40,4 +40,40 @@ router.post("/", async (req, res) => {
 	}
 });
 
+// public
+// get all Companies
+router.get("/", async (req, res) => {
+	try {
+		// get all Active Companies
+		const companies = await Company.find({ isActive: true });
+		return res.json(companies);
+	} catch (err) {
+		return res.status(500).json({ errors: [{ message: err.message }] });
+	}
+});
+
+// public
+// get single company info
+router.get("/:companyId", async (req, res) => {
+	const { companyId } = req.params;
+
+	// validate companyId
+	if (!ObjectId.isValid(companyId))
+		return res.status(400).json({ errors: [{ message: "Invalid CompanyId" }] });
+
+	try {
+		// find company
+		let company = await Company.findOne({ _id: companyId });
+		if (!company)
+			return res
+				.status(404)
+				.json({ errors: [{ message: "Company Not Found" }] });
+
+		// send to user
+		return res.json(company);
+	} catch (err) {
+		return res.status(500).json({ errors: [{ message: err.message }] });
+	}
+});
+
 module.exports = router;
