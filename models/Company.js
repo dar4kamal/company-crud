@@ -4,8 +4,7 @@ const companySchema = new mongoose.Schema({
 	code: {
 		type: String,
 		required: true,
-		minlength: 3,
-		unique: true
+		minlength: 3
 	},
 	name: {
 		type: String,
@@ -22,6 +21,8 @@ const companySchema = new mongoose.Schema({
 		default: true
 	}
 });
+
+companySchema.index({ address: 1, isActive: 1 }, { unique: true });
 
 const Company = mongoose.model("Company", companySchema);
 
