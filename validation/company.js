@@ -2,11 +2,13 @@ const Joi = require("@hapi/joi");
 
 const validateNewCompany = comapny => {
 	const schema = Joi.object().keys({
-		code: Joi.string().required(),
 		name: Joi.string()
 			.min(3)
 			.required(),
 		address: Joi.string()
+			.min(3)
+			.required(),
+		code: Joi.string()
 			.min(3)
 			.required()
 	});
@@ -16,9 +18,9 @@ const validateNewCompany = comapny => {
 
 const validateUpdatedCompany = company => {
 	const schema = Joi.object().keys({
-		code: Joi.string(),
 		name: Joi.string().min(3),
 		address: Joi.string().min(3),
+		code: Joi.string().min(3),
 		isActive: Joi.boolean()
 	});
 
