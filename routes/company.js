@@ -14,18 +14,25 @@ const Company = require("../models/Company");
 router.post("/", async (req, res) => {
 	// validate req body
 	const { error } = validateNewCompany(req.body);
-	if (error) return res.status(400).json({ errors: error.details });
+	if (error) return res.json({ status: 400, errors: error.details });
 
 	let { code, name, address } = req.body;
 
 	try {
 		// check if company existed
-		let company = await Company.findOne({ code });
+		let company = await Company.findOne({ address });
 
+		if (company && !company.isActive) {
+			return res.json({
+				status: 400,
+				errors: [{ message: "Company Already Existed But Not Active" }]
+			});
+		}
 		if (company) {
-			return res
-				.status(400)
-				.json({ errors: [{ message: "Company Already Existed" }] });
+			return res.json({
+				status: 400,
+				errors: [{ message: "Company Already Existed" }]
+			});
 		}
 
 		// add new company
@@ -34,9 +41,9 @@ router.post("/", async (req, res) => {
 			name,
 			address
 		});
-		return res.json(company);
+		return res.json({ status: 200, data: company });
 	} catch (err) {
-		return res.status(500).json({ errors: [{ message: err.message }] });
+		return res.json({ status: 500, errors: [{ message: err.message }] });
 	}
 });
 
@@ -46,9 +53,9 @@ router.get("/", async (req, res) => {
 	try {
 		// get all Active Companies
 		const companies = await Company.find({ isActive: true });
-		return res.json(companies);
+		return res.json({ status: 200, data: companies });
 	} catch (err) {
-		return res.status(500).json({ errors: [{ message: err.message }] });
+		return res.json({ status: 500, errors: [{ message: err.message }] });
 	}
 });
 
@@ -59,20 +66,24 @@ router.get("/:companyId", async (req, res) => {
 
 	// validate companyId
 	if (!ObjectId.isValid(companyId))
-		return res.status(400).json({ errors: [{ message: "Invalid CompanyId" }] });
+		return res.json({
+			status: 400,
+			errors: [{ message: "Invalid CompanyId" }]
+		});
 
 	try {
 		// find company
 		let company = await Company.findOne({ _id: companyId });
 		if (!company)
-			return res
-				.status(404)
-				.json({ errors: [{ message: "Company Not Found" }] });
+			return res.json({
+				status: 400,
+				errors: [{ message: "Company Not Found" }]
+			});
 
 		// send to user
-		return res.json(company);
+		return res.json({ status: 200, data: company });
 	} catch (err) {
-		return res.status(500).json({ errors: [{ message: err.message }] });
+		return res.json({ status: 500, errors: [{ message: err.message }] });
 	}
 });
 
@@ -81,25 +92,42 @@ router.get("/:companyId", async (req, res) => {
 router.put("/:companyId", async (req, res) => {
 	// validate req body
 	const { error } = validateUpdatedCompany(req.body);
-	if (error) return res.status(400).json({ errors: error.details });
+	if (error) return res.json({ status: 400, errors: error.details });
 
 	try {
+		const { address } = req.body;
 		let { companyId } = req.params;
 		// check if company existed
 		let company = await Company.findOne({ _id: companyId });
 
 		if (!company)
-			return res
-				.status(404)
-				.json({ errors: [{ message: "Company Not found" }] });
+			return res.json({
+				status: 404,
+				errors: [{ message: "Company Not found" }]
+			});
+
+		// check if another company existed with the same new addres
+		let anotherCompany = await Company.findOne({
+			address,
+			_id: { $ne: companyId }
+		});
+
+		if (anotherCompany) {
+			return res.json({
+				status: 400,
+				errors: [
+					{ message: "Another Company Already Existed With Same Address ..." }
+				]
+			});
+		}
 
 		// update company
 		company = await Company.findByIdAndUpdate(company._id, req.body, {
 			new: true
 		});
-		return res.json(company);
+		return res.json({ status: 200, data: company });
 	} catch (err) {
-		return res.status(500).json({ errors: [{ message: err.message }] });
+		return res.json({ status: 500, errors: [{ message: err.message }] });
 	}
 });
 
@@ -113,9 +141,10 @@ router.delete("/:companyId", async (req, res) => {
 		let company = await Company.findOne({ _id: companyId });
 
 		if (!company)
-			return res
-				.status(404)
-				.json({ errors: [{ message: "Company Not found" }] });
+			return res.json({
+				status: 404,
+				errors: [{ message: "Company Not found" }]
+			});
 
 		// (soft) delete company
 		company = await Company.findByIdAndUpdate(
@@ -125,9 +154,9 @@ router.delete("/:companyId", async (req, res) => {
 				new: true
 			}
 		);
-		return res.json(company);
+		return res.json({ status: 200, data: company });
 	} catch (err) {
-		return res.status(500).json({ errors: [{ message: err.message }] });
+		return res.json({ status: 500, errors: [{ message: err.message }] });
 	}
 });
 
