@@ -1,26 +1,42 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import {
+	BrowserRouter as Router,
+	Route,
+	Switch,
+	Redirect
+} from "react-router-dom";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+import { Container, Row, Col } from "react-bootstrap";
+import Header from "./Components/Header";
+import CompanyTable from "./Components/CompanyTable";
+import AddCompany from "./Components/AddCompany";
+import EditCompany from "./Components/EditCompany";
+
+const App = () => {
+	return (
+		<Router>
+			<Header />
+
+			<Switch>
+				<React.Fragment>
+					<Container>
+						<Row style={{ marginTop: 20, padding: 10 }}>
+							<Col md={12} className="text-center">
+								<Route
+									exact
+									path="/"
+									component={() => <Redirect to="home" />}
+								/>
+								<Route exact path="/home" component={CompanyTable}></Route>
+								<Route exact path="/add" component={AddCompany}></Route>
+								<Route exact path="/edit" component={EditCompany}></Route>
+							</Col>
+						</Row>
+					</Container>
+				</React.Fragment>
+			</Switch>
+		</Router>
+	);
+};
 
 export default App;
